@@ -24,6 +24,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
+    // Check account status (legacy users without accountStatus are treated as APPROVED)
+    if (user.accountStatus === 'PENDING') {
+      return NextResponse.json({
+        error: "Your account is pending admin approval. You'll be notified via email once reviewed."
+      }, { status: 403 });
+    }
+    if (user.accountStatus === 'REJECTED') {
+      return NextResponse.json({
+        error: `Your registration was declined. ${user.rejectionReason ? 'Reason: ' + user.rejectionReason + '.' : ''} Please contact the administration.`
+      }, { status: 403 });
+    }
+
     // Set HTTP-only cookie
     await setAuthCookie(user._id.toString(), user.role, user.email);
 

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { Lock, Mail, Loader2 } from "lucide-react";
+import { Lock, Mail, Loader2, Home } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "next-themes";
+
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -50,6 +50,10 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10 animate-slide-up">
         <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
+            <Home className="h-4 w-4" />
+            Back to Home
+          </Link>
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 inner-glow">
             <Lock className="w-8 h-8 text-primary" />
           </div>
@@ -82,6 +86,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="e.g. j.doe@uums.edu"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -102,6 +107,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -110,13 +116,17 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loading}
                 className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold shadow-md hover:bg-primary/90 focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                suppressHydrationWarning
               >
                 {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Authenticating...</> : "Sign In"}
               </button>
             </form>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
-              Credentials are provided by the university admin.
+              Don&apos;t have an account?{" "}
+              <Link href="/auth/signup" className="text-primary font-medium hover:underline">
+                Register here
+              </Link>
             </div>
           </div>
         </Card>

@@ -7,16 +7,18 @@ import { useAuth, roleLabels, UserRole } from "@/lib/auth";
 import {
   LayoutDashboard, Users, GraduationCap, Building2, Wallet, BarChart3,
   MessageSquare, BookOpen, PartyPopper, X, ChevronLeft, ChevronRight, LogOut, Shield,
-  Megaphone, LibraryBig
+  Megaphone, LibraryBig, UserCheck, Home
 } from "lucide-react";
-import { useState } from "react";
 import { WalletWidget } from "./WalletWidget";
+import { getInitials } from "@/lib/utils";
 
 const allNavItems = [
+  { label: "Home", href: "/", icon: Home, roles: ["super_admin", "director", "dean", "student", "professor", "hod", "hostel_warden", "chief_warden", "hostel_supervisor", "accountant", "fest_coordinator", "librarian"] as UserRole[] },
   { label: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard, roles: ["super_admin", "director", "dean"] as UserRole[] },
   { label: "Manage Students", href: "/dashboard/admin/students", icon: GraduationCap, roles: ["super_admin", "director", "dean"] as UserRole[] },
   { label: "Manage Faculty", href: "/dashboard/admin/faculty", icon: Users, roles: ["super_admin", "director", "dean"] as UserRole[] },
   { label: "Courses", href: "/dashboard/admin/courses", icon: BookOpen, roles: ["super_admin", "director", "dean"] as UserRole[] },
+  { label: "Approvals", href: "/dashboard/admin/approvals", icon: UserCheck, roles: ["super_admin", "director", "dean"] as UserRole[] },
   { label: "Student Portal", href: "/dashboard/student", icon: GraduationCap, roles: ["student"] as UserRole[] },
   { label: "Academics", href: "/dashboard/student/academics", icon: BookOpen, roles: ["student"] as UserRole[] },
   { label: "Attendance", href: "/dashboard/student/attendance", icon: BarChart3, roles: ["student"] as UserRole[] },
@@ -36,12 +38,13 @@ const allNavItems = [
 interface SidebarProps {
   mobileOpen: boolean;
   onMobileClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
+export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
 
   if (!user) return null;
 
@@ -88,7 +91,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         <div className={clsx("border-b border-sidebar-border p-4", collapsed && "px-2 py-3")}>
           <div className={clsx("flex items-center gap-3", collapsed && "justify-center")}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
-              {user.avatar}
+              {getInitials(user.name)}
             </div>
             {!collapsed && (
               <div className="min-w-0">
@@ -105,7 +108,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
                 key={item.href}
@@ -130,7 +133,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {/* Footer */}
         <div className="border-t border-sidebar-border p-3 space-y-1">
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={onToggleCollapse}
             className="hidden lg:flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-hover transition-colors"
           >
             {collapsed ? <ChevronRight className="h-5 w-5 mx-auto" /> : (

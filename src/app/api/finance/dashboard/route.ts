@@ -35,17 +35,19 @@ export async function GET() {
     });
 
     const collectionStats = {
-      totalTarget: 50000000, // Hardcoded target for demo
-      collected: totalTuitionRevenue + totalResidenceRevenue,
-      monthlyTrend: [
-        { month: "Jan", amount: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.1) },
-        { month: "Feb", amount: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.2) },
-        { month: "Mar", amount: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.7) }
+      totalCollected: totalTuitionRevenue + totalResidenceRevenue,
+      pending: 2500000, // Hardcoded for demo
+      defaulters: 42,   // Hardcoded for demo
+      totalExpected: 50000000,
+      monthlyCollection: [
+        { month: "Jan", collected: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.1) || 500000 },
+        { month: "Feb", collected: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.2) || 1200000 },
+        { month: "Mar", collected: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.7) || 3500000 }
       ],
       programWise: [
-        { name: "B.Tech", value: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.6), fill: "#3b82f6" },
-        { name: "M.Tech", value: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.3), fill: "#10b981" },
-        { name: "BCA", value: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.1), fill: "#f59e0b" }
+        { program: "B.Tech", collected: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.6) || 3000000 },
+        { program: "M.Tech", collected: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.3) || 1500000 },
+        { program: "BCA", collected: Math.floor((totalTuitionRevenue + totalResidenceRevenue) * 0.1) || 500000 }
       ]
     };
 
@@ -58,6 +60,8 @@ export async function GET() {
         id: t._id.toString(),
         student: t.userId?.name || "Unknown",
         studentId: "U-" + t.userId?._id.toString().substring(0,4),
+        program: "B.Tech", // Hardcoded default
+        method: "Wallet",
         amount: t.amount,
         date: t.createdAt,
         status: t.status,

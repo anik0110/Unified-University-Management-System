@@ -8,6 +8,8 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Ca
 import { BookOpen, BarChart3, Wallet, Building2, User, Trophy, Bell, Download } from "lucide-react";
 import { StatusBadge } from "@/components/ui/Badge";
 import Link from "next/link";
+import { generateIDCard } from "@/lib/id-card-generator";
+import { getInitials } from "@/lib/utils";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -53,7 +55,20 @@ export default function StudentDashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Welcome back, {studentProfile.name.split(" ")[0]}! 👋</h1>
           <p className="text-muted-foreground mt-1">Here is your academic overview for {studentProfile.semester}th Semester.</p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-sm">
+        <button
+          onClick={() => generateIDCard({
+            name: studentProfile.name,
+            enrollmentNo: studentProfile.enrollmentNo,
+            program: studentProfile.program,
+            semester: studentProfile.semester,
+            section: studentProfile.section,
+            email: studentProfile.email,
+            phone: studentProfile.phone,
+            bloodGroup: studentProfile.bloodGroup,
+            admissionYear: studentProfile.admissionYear,
+          })}
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-sm"
+        >
           <Download className="h-4 w-4" />
           Download ID Card
         </button>
@@ -72,7 +87,7 @@ export default function StudentDashboard() {
           <CardHeader className="flex flex-row gap-4 items-center justify-between mb-0 border-b border-border pb-4">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold border-2 border-primary/20">
-                {user.avatar}
+                {getInitials(user.name)}
               </div>
               <div>
                 <CardTitle className="text-xl">{studentProfile.name}</CardTitle>

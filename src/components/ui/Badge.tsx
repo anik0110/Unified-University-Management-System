@@ -35,11 +35,11 @@ export function Badge({ children, variant = "default", className }: BadgeProps) 
 
 export function StatusBadge({ status }: { status: string }) {
   const variant: BadgeVariant =
-    status === "Paid" || status === "Success" || status === "Resolved" || status === "Closed" || status === "Active" || status === "Confirmed" || status === "Checked Out"
+    status === "Paid" || status === "Success" || status === "Resolved" || status === "Closed" || status === "Active" || status === "Confirmed" || status === "Checked Out" || status === "Approved"
       ? "success"
       : status === "Pending" || status === "Almost Full"
       ? "warning"
-      : status === "Failed" || status === "Overdue" || status === "Urgent"
+      : status === "Failed" || status === "Overdue" || status === "Urgent" || status === "Rejected"
       ? "destructive"
       : status === "In Progress" || status === "Assigned" || status === "In Campus"
       ? "info"

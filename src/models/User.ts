@@ -10,6 +10,9 @@ export interface IUser extends Document {
   avatar?: string;
   otp?: string;
   otpExpiry?: Date;
+  accountStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  rejectionReason?: string;
+  registrationNo?: string;
   profileId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -33,6 +36,13 @@ const userSchema = new Schema<IUser>(
     avatar: { type: String },
     otp: { type: String },
     otpExpiry: { type: Date },
+    accountStatus: {
+      type: String,
+      enum: ['PENDING', 'APPROVED', 'REJECTED'],
+      default: 'APPROVED',
+    },
+    rejectionReason: { type: String },
+    registrationNo: { type: String },
     profileId: { type: Schema.Types.ObjectId },
   },
   { timestamps: true }

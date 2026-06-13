@@ -10,6 +10,7 @@ import { Users, BookOpen, Clock, Calendar, FileCheck2, TrendingUp, ClipboardChec
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { getInitials } from "@/lib/utils";
 
 export default function FacultyDashboard() {
   const { user } = useAuth();
@@ -71,7 +72,7 @@ export default function FacultyDashboard() {
         <Card className="lg:col-span-1 border-primary/20 bg-primary/5">
           <CardHeader className="text-center pb-0 border-b-0 space-y-4">
             <div className="mx-auto h-24 w-24 rounded-full bg-primary/10 text-primary flex items-center justify-center text-3xl font-bold border-4 border-background shadow-lg">
-              {user.avatar || user.name?.charAt(0)}
+              {getInitials(user.name)}
             </div>
             <div>
               <CardTitle className="text-xl">{user.name}</CardTitle>

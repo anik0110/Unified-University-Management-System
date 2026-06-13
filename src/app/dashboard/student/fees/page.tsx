@@ -56,7 +56,7 @@ export default function StudentFees() {
   };
 
   const handlePayFee = async (type: string, amount: number) => {
-    if (!confirm(`Pay ₹${amount} for ${type} Fee? This will be deducted from your wallet.`)) return;
+    if (!confirm(`Pay ₹${amount.toLocaleString()} for ${type} Fee? This will be deducted from your wallet.`)) return;
     setPayingFee(type);
     try {
       const res = await fetch("/api/finance/pay", {
@@ -89,6 +89,65 @@ export default function StudentFees() {
       alert("Error processing payment");
     } finally {
       setPayingFee(null);
+    }
+  };
+
+  const handlePayAll = async () => {
+    const pendingItems = feeDetails.installments.filter((i: any) => i.status === "Pending");
+    if (pendingItems.length === 0) {
+      alert("No pending fees to pay.");
+      return;
+    }
+    const totalPending = pendingItems.reduce((sum: number, i: any) => sum + i.amount, 0);
+    if (!confirm(`Pay all pending fees (₹${totalPending.toLocaleString()})? This will be deducted from your wallet.`)) return;
+    
+    for (const item of pendingItems) {
+      setPayingFee(item.type);
+      try {
+        const res = await fetch("/api/finance/pay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: item.type })
+        });
+        const resData = await res.json();
+        if (resData.success) {
+          if (user) login({ ...user, walletBalance: resData.walletBalance });
+          if (user) {
+            generatePDFReceipt({
+              transactionId: resData.transaction._id,
+              date: new Date().toLocaleDateString(),
+              name: user.name,
+              email: user.email,
+              amount: resData.transaction.amount,
+              type: "Finance Fee",
+              description: `${item.type} Fee ${resData.isLate ? "(Applied Late Fine)" : ""}`
+            });
+          }
+        } else {
+          alert(resData.error || `Failed to pay ${item.type} fee`);
+          break;
+        }
+      } catch {
+        alert(`Error processing ${item.type} payment`);
+        break;
+      }
+    }
+    setPayingFee(null);
+    loadDashboard();
+    alert("All fees processed!");
+  };
+
+  const handleDownloadReceipt = (row: any) => {
+    if (user && row.txnId) {
+      generatePDFReceipt({
+        transactionId: row.txnId,
+        date: row.date,
+        name: user.name,
+        email: user.email,
+        amount: row.amount,
+        type: "Finance Fee",
+        description: `${row.type} Fee Payment`
+      });
     }
   };
 
@@ -137,8 +196,12 @@ export default function StudentFees() {
           <p className="text-muted-foreground mt-1">Manage your financial obligations and payments.</p>
         </div>
         {feeDetails.pending > 0 && (
-          <button className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-sm">
-            Pay {formatCurrency(feeDetails.pending)}
+          <button 
+            onClick={handlePayAll}
+            disabled={!!payingFee}
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {payingFee ? <><Loader2 className="h-4 w-4 animate-spin" /> Paying...</> : <>Pay {formatCurrency(feeDetails.pending)}</>}
           </button>
         )}
       </div>
@@ -208,7 +271,7 @@ export default function StudentFees() {
                 { key: "txnId", label: "Transaction ID", className: "font-mono text-xs text-muted-foreground", render: (row: any) => row.txnId || "-" },
                 { key: "action", label: "", render: (row: any) => (
                   row.status === "Paid" ? (
-                    <button onClick={() => alert("PDF downloaded in real flow via JS-PDF")} className="text-primary hover:text-primary/80 transition-colors" title="Download Receipt">
+                    <button onClick={() => handleDownloadReceipt(row)} className="text-primary hover:text-primary/80 transition-colors" title="Download Receipt">
                       <Download className="h-4 w-4" />
                     </button>
                   ) : (

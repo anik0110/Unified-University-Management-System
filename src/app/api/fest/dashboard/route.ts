@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth-util";
 import connectDB from "@/lib/db";
 import { Event } from "@/models/Event";
 import { FestRegistration } from "@/models/FestRegistration";
+import { EventRegistration } from "@/models/EventRegistration";
 import { Setting } from "@/models/Setting";
 
 export const dynamic = "force-dynamic";
@@ -25,11 +26,23 @@ export async function GET() {
       .sort({ date: 1 })
       .lean();
 
-    // Fetch all registrations
+    // Fetch all fest registrations
     const registrationsData = await FestRegistration.find()
       .populate("userId", "name")
       .sort({ createdAt: -1 })
       .lean();
+
+    // Fetch all event registrations
+    const eventRegistrations = await EventRegistration.find()
+      .populate("leaderId", "name email")
+      .lean();
+
+    // Check user's fest passes
+    const userFestPasses = await FestRegistration.find({ userId: session.userId }).lean();
+    const userPassMap: Record<string, boolean> = {};
+    userFestPasses.forEach((p: any) => {
+      userPassMap[p.festType] = true;
+    });
 
     // Aggregate stats
     const totalTechnicalRegs = registrationsData.filter((r: any) => r.festType === "Technical").length;
@@ -39,31 +52,48 @@ export async function GET() {
     const culturalRevenue = totalCulturalRegs * prices.culturalFee;
     const totalRevenue = technicalRevenue + culturalRevenue;
 
+    // Count events per fest
+    const technicalEvents = eventsData.filter((e: any) => e.festType === "Technical").length;
+    const culturalEvents = eventsData.filter((e: any) => e.festType === "Cultural").length;
+
+    // Count event registrations per fest
+    const techEventRegs = eventRegistrations.filter((r: any) => r.festType === "Technical").length;
+    const cultEventRegs = eventRegistrations.filter((r: any) => r.festType === "Cultural").length;
+
     const festStats = {
-      totalFests: 2, // Tech and Cultural
+      totalFests: 2,
       totalEvents: eventsData.length,
       totalRegistrations: registrationsData.length,
       totalRevenue: totalRevenue,
       revenueByFest: [
-        { fest: "Technical Fest", revenue: technicalRevenue },
-        { fest: "Cultural Fest", revenue: culturalRevenue }
+        { fest: "Technical Fest", revenue: technicalRevenue, registrations: totalTechnicalRegs, events: technicalEvents, eventRegistrations: techEventRegs },
+        { fest: "Cultural Fest", revenue: culturalRevenue, registrations: totalCulturalRegs, events: culturalEvents, eventRegistrations: cultEventRegs }
       ],
       prices
     };
 
     // Format events for UI
-    const festEvents = eventsData.map((e: any) => ({
-      id: e._id.toString(),
-      name: e.title,
-      category: e.festType,
-      date: new Date(e.date).toLocaleDateString(),
-      venue: e.venue,
-      fee: e.festType === "Technical" ? prices.technicalFee : prices.culturalFee,
-      status: "Open", // logic could be added to check date
-      fest: e.festType + " Fest"
-    }));
+    const festEvents = eventsData.map((e: any) => {
+      const eventRegs = eventRegistrations.filter(
+        (r: any) => r.eventId.toString() === e._id.toString()
+      );
+      return {
+        id: e._id.toString(),
+        name: e.title,
+        category: e.festType,
+        date: new Date(e.date).toLocaleDateString(),
+        venue: e.venue,
+        fee: e.festType === "Technical" ? prices.technicalFee : prices.culturalFee,
+        status: eventRegs.length >= (e.capacity || 100) ? "Full" : "Open",
+        fest: e.festType + " Fest",
+        minTeamSize: e.minTeamSize || 1,
+        maxTeamSize: e.maxTeamSize || 1,
+        capacity: e.capacity || 100,
+        registrations: eventRegs.length,
+      };
+    });
 
-    // Format registrations
+    // Format fest registrations
     const festRegistrations = registrationsData.map((r: any) => ({
       id: r._id.toString(),
       event: r.festType + " Fest Registration",
@@ -78,7 +108,8 @@ export async function GET() {
     const payload = {
       festEvents,
       festRegistrations,
-      festStats
+      festStats,
+      userFestPasses: userPassMap,
     };
 
     return NextResponse.json({ success: true, data: payload }, { status: 200 });

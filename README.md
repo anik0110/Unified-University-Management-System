@@ -90,6 +90,34 @@ npm start
 4. Push to the branch (`git push origin feature/AmazingFeature`).
 5. Open a Pull Request.
 
+## 🔒 Security & Pre-Deployment Checklist
+
+Before deploying this application to a real-world production environment, ensure you have implemented the following security best practices:
+
+### 1. Application Security Headers & Configs
+- [ ] **HTTP Security Headers**: Update `next.config.ts` to include strict security headers:
+  - `Content-Security-Policy` (CSP)
+  - `X-Frame-Options: DENY` (Prevent Clickjacking)
+  - `X-Content-Type-Options: nosniff`
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+- [ ] **Cookie Security**: Ensure JWT cookies in `src/lib/auth-util.ts` are set with `secure: process.env.NODE_ENV === 'production'` and `sameSite: 'strict'`.
+
+### 2. Network & API Protection
+- [ ] **API Rate Limiting**: Implement rate-limiting (e.g., via `upstash-ratelimit` or custom middleware) on sensitive endpoints like `/api/auth/login` and `/api/auth/signup` to prevent brute-force and DDoS attacks.
+- [ ] **CORS Configuration**: Restrict Cross-Origin Resource Sharing (CORS) headers if your API is accessed from different domains, ensuring only trusted origins are allowed.
+- [ ] **CSRF Protection**: Implement Anti-CSRF tokens for sensitive state-changing API routes if you rely heavily on cookie-based sessions.
+
+### 3. Database & Infrastructure
+- [ ] **MongoDB Access Control**: Enforce strict IP Whitelisting in MongoDB Atlas (allow only your production server/Vercel IPs).
+- [ ] **Database Credentials**: Use strong, randomly generated passwords for database users. Never use root/admin credentials for the application's connection string.
+- [ ] **Environment Variables**: Ensure `.env.local` is listed in `.gitignore` (it is by default). Generate a cryptographically strong `JWT_SECRET` (e.g., using `openssl rand -base64 32`).
+
+### 4. Codebase & Dependencies
+- [ ] **Dependency Audit**: Run `npm audit` and `npm audit fix` to resolve any known vulnerabilities in third-party packages (e.g., ensuring `next`, `uuid`, and `picomatch` are up to date).
+- [ ] **Input Sanitization**: While Mongoose provides schema validation, ensure rigorous server-side validation/sanitization to prevent NoSQL injection and Cross-Site Scripting (XSS) when rendering user-generated content.
+- [ ] **Logging & Monitoring**: Remove debug `console.log` statements and implement a robust logging service (like Sentry or Datadog) to monitor errors and unauthorized access attempts in production.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

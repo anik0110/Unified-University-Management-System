@@ -32,13 +32,13 @@ export async function POST(req: Request) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const allowed = ["super_admin", "director", "dean", "hod", "professor", "fest_coordinator"];
-    if (!allowed.includes(session.role)) {
+    if (!allowed.includes(session.role) && !(session.extraRoles || []).includes("fest_coordinator")) {
       return NextResponse.json({ error: "Not authorized to create events" }, { status: 403 });
     }
 
     await connectDB();
     const body = await req.json();
-    const { title, description, date, venue, isPublic, organizer } = body;
+    const { title, description, date, venue, isPublic, organizer, festType, minTeamSize, maxTeamSize, capacity } = body;
 
     if (!title || !description || !date || !venue) {
       return NextResponse.json({ error: "Title, description, date, and venue are required" }, { status: 400 });
@@ -52,6 +52,10 @@ export async function POST(req: Request) {
       isPublic: isPublic !== false,
       organizer: organizer || session.role,
       authorId: session.userId,
+      festType: festType || "General",
+      minTeamSize: minTeamSize || 1,
+      maxTeamSize: maxTeamSize || 1,
+      capacity: capacity || 100,
     });
 
     return NextResponse.json({ success: true, event }, { status: 201 });

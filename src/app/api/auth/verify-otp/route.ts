@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    
+
     if (!user || user.otp !== otp) {
       return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
     }
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
     }
 
-    // OTP is valid. Clear it and issue a short-lived reset token (JWT)
+    // OTP is valid. Clear it and issue a short-lived reset token ()
     user.otp = undefined;
     user.otpExpiry = undefined;
     await user.save();
@@ -30,10 +30,10 @@ export async function POST(req: Request) {
     // Create a 15-minute token specific for password reset
     const resetToken = await encrypt({ userId: user._id.toString(), type: "reset" });
 
-    return NextResponse.json({ 
-      success: true, 
-      resetToken, 
-      message: "OTP verified successfully" 
+    return NextResponse.json({
+      success: true,
+      resetToken,
+      message: "OTP verified successfully"
     }, { status: 200 });
 
   } catch (error) {

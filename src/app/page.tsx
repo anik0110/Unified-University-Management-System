@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useAuth, roleDashboardPaths } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { ArrowRight, BookOpen, Building2, Users, Calendar, Megaphone, Laptop, Globe, Handshake, Search } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, Users, Calendar, Megaphone, Laptop, Globe, Handshake, Search, UserPlus, LayoutDashboard } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 
 export default function LandingPage() {
   const { theme, setTheme } = useTheme();
+  const { user, isLoading } = useAuth();
   const [notices, setNotices] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,9 +55,16 @@ export default function LandingPage() {
           <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground transition-all focus:outline-none">
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
-          <Link href="/auth/login" className="bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 transition-all">
-            Sign In
-          </Link>
+          {!isLoading && user ? (
+            <Link href={roleDashboardPaths[user.role] || "/dashboard"} className="flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 transition-all">
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Link>
+          ) : (
+            <Link href="/auth/login" className="bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 transition-all">
+              Sign In
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -82,6 +92,9 @@ export default function LandingPage() {
             <Link href="/auth/login" className="flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold px-8 py-4 rounded-full shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-105 transition-all text-lg relative group overflow-hidden">
               <span className="absolute inset-0 w-full h-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
               Sign In to Portal <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link href="/auth/signup" className="flex items-center justify-center gap-2 bg-card text-foreground font-semibold px-8 py-4 rounded-full shadow-lg border border-border hover:border-primary/50 hover:scale-105 transition-all text-lg">
+              Register <UserPlus className="h-5 w-5" />
             </Link>
           </div>
         </section>

@@ -9,6 +9,7 @@ import { useEffect } from "react";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -22,9 +23,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      <Sidebar mobileOpen={mobileMenuOpen} onMobileClose={() => setMobileMenuOpen(false)} />
+      <Sidebar
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
       
-      <div className="flex flex-1 flex-col lg:pl-64 transition-all duration-300">
+      <div className={`flex flex-1 flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'}`}>
         <Navbar onMenuClick={() => setMobileMenuOpen(true)} />
         
         <main className="flex-1 p-4 lg:p-8 animate-fade-in relative z-10">
