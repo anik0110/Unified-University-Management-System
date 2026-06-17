@@ -63,6 +63,15 @@ To quickly set up the initial Super Admin account or mock data:
 npm run seed
 ```
 
+**Default local development credentials created by the seed script:**
+* **Email:** `admin@university.ac.in`
+* **Password:** `123456`
+* **Role:** Super Admin
+
+> [!WARNING]
+> These credentials are strictly for **local development and testing**. Never use these default credentials in a production deployment.
+
+
 ### 5. Running the Development Server
 
 Start the application in development mode:
